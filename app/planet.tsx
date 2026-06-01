@@ -20,7 +20,8 @@ interface PlanetProps {
   angularSpeed: number;
   onClick: () => void;
   paused: boolean;
-  setPaused: React.Dispatch<React.SetStateAction<boolean>>;
+  motionScale: number;
+  onHoverPauseChange: (hovering: boolean) => void;
   setActivePlanet: (planet: { label: string; blurb: string } | null) => void;
 }
 
@@ -33,7 +34,8 @@ export default function Planet({
   angularSpeed,
   onClick,
   paused,
-  setPaused,
+  motionScale,
+  onHoverPauseChange,
   setActivePlanet,
 }: PlanetProps) {
   const texture = useTexture(
@@ -51,40 +53,40 @@ export default function Planet({
 
   useFrame((_, delta) => {
     if (paused) return;
-    angleRef.current += angularSpeed * delta;
+    angleRef.current += angularSpeed * motionScale * delta;
     const x = Math.cos(angleRef.current) * distance;
     const z = Math.sin(angleRef.current) * distance;
     if (ref.current) {
       ref.current.position.set(x, 0, z);
-      ref.current.rotation.y += delta * 0.5;
+      ref.current.rotation.y += delta * 0.5 * motionScale;
     }
   });
 
   const handleOver = useCallback((e: ThreeEvent<PointerEvent>) => {
     e.stopPropagation();
     setHovered(true);
-    setPaused(true);
+    onHoverPauseChange(true);
     setActivePlanet({ label, blurb });
-  }, [setPaused, setActivePlanet, label, blurb]);
+  }, [onHoverPauseChange, setActivePlanet, label, blurb]);
 
   const handleOut = useCallback((e: ThreeEvent<PointerEvent>) => {
     e.stopPropagation();
     setHovered(false);
-    setPaused(false);
+    onHoverPauseChange(false);
     setActivePlanet(null);
-  }, [setPaused, setActivePlanet]);
+  }, [onHoverPauseChange, setActivePlanet]);
 
   const handleClick = useCallback((e: ThreeEvent<MouseEvent>) => {
     e.stopPropagation();
     onClick();
   }, [onClick]);
 
-
   return (
     <group>
-      <OrbitRing radius={distance} />
+      <OrbitRing radius={distance} highlighted={hovered} />
       <mesh
         ref={ref}
+        scale={hovered ? 1.08 : 1}
         onPointerOver={handleOver}
         onPointerOut={handleOut}
         onClick={handleClick}

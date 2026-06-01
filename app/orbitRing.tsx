@@ -4,7 +4,15 @@ import React, {
 import { Line } from "@react-three/drei";
 
 
-export default function OrbitRing({ radius = 5, segments = 128 }: { radius?: number; segments?: number }) {
+export default function OrbitRing({
+  radius = 5,
+  segments = 128,
+  highlighted = false,
+}: {
+  radius?: number;
+  segments?: number;
+  highlighted?: boolean;
+}) {
   const points = useMemo<[number, number, number][]>(() => {
     const pts: [number, number, number][] = [];
     for (let i = 0; i <= segments; i++) {
@@ -14,5 +22,13 @@ export default function OrbitRing({ radius = 5, segments = 128 }: { radius?: num
     return pts;
   }, [radius, segments]);
 
-  return <Line points={points} lineWidth={1} transparent opacity={0.35} />;
+  return (
+    <Line
+      points={points}
+      lineWidth={highlighted ? 2 : 1}
+      transparent
+      opacity={highlighted ? 0.75 : 0.35}
+      color={highlighted ? "#ffffff" : undefined}
+    />
+  );
 }
